@@ -12,68 +12,10 @@ Customer churn is a business problem as much as a classification problem. A prod
 
 This repository contains both the original analytical notebook and a production-oriented ML/MLOps layer.
 
-## Architecture
+## Complete Architecture
+<img width="1215" height="1295" alt="ChatGPT Image Sep 19, 2026, 09_18_41 PM" src="https://github.com/user-attachments/assets/e9eb5a39-63e2-4f24-8b4a-46c363b79fd9" />
 
-```text
-                         ┌──────────────────────────────┐
-                         │       Telecom Customer      │
-                         │       Behavioral Data       │
-                         └──────────────┬───────────────┘
-                                        │
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │ Data Loading & Validation    │
-                         │ CSV / ZIP / Parquet          │
-                         └──────────────┬───────────────┘
-                                        │
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │ Feature Preparation           │
-                         │ cleaning / type handling      │
-                         │ categorical encoding          │
-                         └──────────────┬───────────────┘
-                                        │
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │ Churn Model                   │
-                         │ Logistic Regression           │
-                         │ class_weight = balanced       │
-                         └──────────────┬───────────────┘
-                                        │
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │ Threshold Optimization        │
-                         │ Minimum recall constraint     │
-                         └──────────────┬───────────────┘
-                                        │
-                       ┌────────────────┼────────────────┐
-                       ▼                ▼                ▼
-                   Evaluation        MLflow          Artifacts
-                   metrics          tracking       model + metadata
-                       │                │                │
-                       └────────────────┼────────────────┘
-                                        │
-                                        ▼
-                         ┌──────────────────────────────┐
-                         │          FastAPI              │
-                         │ /health /ready /model        │
-                         │ /predict /reload /metrics    │
-                         └──────────────┬───────────────┘
-                                        │
-                         ┌──────────────┼───────────────┐
-                         ▼              ▼               ▼
-                      Redis        PostgreSQL       Prometheus
-                      cache        prediction        metrics
-                                   events              │
-                                                       ▼
-                                                   Grafana
-                                       
-                         ┌──────────────────────────────┐
-                         │         Streamlit UI          │
-                         │ experiment runner / results   │
-                         │ data preview / artifacts      │
-                         └──────────────────────────────┘
-```
+
 
 ## Repository Structure
 
