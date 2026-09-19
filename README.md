@@ -1,166 +1,496 @@
-# Artificial-Intelligence-Driven-Customer-Retention-System
-End-to-end telecom churn prediction system using machine learning. Includes EDA, feature engineering, RFE/PCA-based modeling, and recall-optimized evaluation. Identifies at-risk customers using behavioral trends and enables data-driven retention strategies for improved customer lifetime value.
+# Artificial Intelligence Driven Customer Retention System
 
-# 📊 Telecom Churn Prediction - End-to-End ML System
+> End-to-end telecom customer-churn prediction platform combining behavioral feature engineering, recall-oriented machine learning, experiment tracking, API serving, caching, persistence, observability, and a Streamlit experiment workspace.
 
-## 🚀 Overview
-This project builds a complete **end-to-end machine learning system** to predict customer churn in the telecom industry.  
+## Overview
 
-The goal is to **identify high-risk customers early** and enable **data-driven retention strategies**.
+Customer churn is a business problem as much as a classification problem. A production retention system needs to answer three questions:
 
----
+1. Which customers are at risk of churn?
+2. Which behavioral signals are associated with that risk?
+3. How can the prediction be operationalized for retention workflows?
 
-## 🎯 Problem Statement
-Customer churn leads to significant revenue loss.  
+This repository contains both the original analytical notebook and a production-oriented ML/MLOps layer.
 
-This project answers:
-- Who is likely to churn?
-- Why are they churning?
-- How can we intervene early?
+## Architecture
 
----
-
-## 🧠 Key Highlights
-
-- 📊 Exploratory Data Analysis (EDA)
-- 🧹 Data Cleaning & Feature Engineering
-- 🔍 Feature Selection (RFE, Correlation, VIF)
-- ⚙️ Dimensionality Reduction (PCA)
-- 🤖 Model Building:
-  - Logistic Regression
-  - Random Forest
-  - Gradient Boosting
-  - XGBoost
-- 🎯 Threshold Optimization (Recall-focused)
-- 📈 Model Evaluation (ROC, PR Curve, Confusion Matrix)
-
----
-
-## 📂 Project Structure
-
+```text
+                         ┌──────────────────────────────┐
+                         │       Telecom Customer      │
+                         │       Behavioral Data       │
+                         └──────────────┬───────────────┘
+                                        │
+                                        ▼
+                         ┌──────────────────────────────┐
+                         │ Data Loading & Validation    │
+                         │ CSV / ZIP / Parquet          │
+                         └──────────────┬───────────────┘
+                                        │
+                                        ▼
+                         ┌──────────────────────────────┐
+                         │ Feature Preparation           │
+                         │ cleaning / type handling      │
+                         │ categorical encoding          │
+                         └──────────────┬───────────────┘
+                                        │
+                                        ▼
+                         ┌──────────────────────────────┐
+                         │ Churn Model                   │
+                         │ Logistic Regression           │
+                         │ class_weight = balanced       │
+                         └──────────────┬───────────────┘
+                                        │
+                                        ▼
+                         ┌──────────────────────────────┐
+                         │ Threshold Optimization        │
+                         │ Minimum recall constraint     │
+                         └──────────────┬───────────────┘
+                                        │
+                       ┌────────────────┼────────────────┐
+                       ▼                ▼                ▼
+                   Evaluation        MLflow          Artifacts
+                   metrics          tracking       model + metadata
+                       │                │                │
+                       └────────────────┼────────────────┘
+                                        │
+                                        ▼
+                         ┌──────────────────────────────┐
+                         │          FastAPI              │
+                         │ /health /ready /model        │
+                         │ /predict /reload /metrics    │
+                         └──────────────┬───────────────┘
+                                        │
+                         ┌──────────────┼───────────────┐
+                         ▼              ▼               ▼
+                      Redis        PostgreSQL       Prometheus
+                      cache        prediction        metrics
+                                   events              │
+                                                       ▼
+                                                   Grafana
+                                       
+                         ┌──────────────────────────────┐
+                         │         Streamlit UI          │
+                         │ experiment runner / results   │
+                         │ data preview / artifacts      │
+                         └──────────────────────────────┘
 ```
 
-├── data/
-│   ├── train.csv
-│   └── test.csv
-├── notebooks/
-│   └── Artificial-Intelligence-Driven-Customer-Retention-System.ipynb
-├── README.md
-└── requirements.txt
+## Repository Structure
 
+```text
+.
+├── Artificial_intelligence_Driven_Customer_Retention_System.ipynb
+├── app.py
+├── api/
+│   └── main.py
+├── src/
+│   ├── data.py
+│   ├── evaluation.py
+│   └── model.py
+├── training/
+│   └── train.py
+├── mlflow/
+│   └── Dockerfile
+├── monitoring/
+│   ├── prometheus.yml
+│   └── grafana/
+│       ├── dashboards/
+│       └── provisioning/
+├── tests/
+├── Dockerfile
+├── Dockerfile.web
+├── docker-compose.yml
+├── requirements.txt
+├── requirements-api.txt
+├── requirements-train.txt
+├── requirements-web.txt
+├── train data.zip
+├── test.csv
+├── sample.csv
+├── data_dictionary.csv
+└── README.md
 ```
 
----
+## Machine Learning Pipeline
 
-## ⚙️ Tech Stack
+The production training path is deliberately separated from the exploratory notebook.
 
-- Python 🐍
-- Pandas, NumPy
-- Scikit-learn
-- Statsmodels
-- XGBoost
-- Matplotlib, Seaborn
-
----
-
-## 📊 Key Features Engineered
-
-- 📉 ARPU trends (revenue decline)
-- 📞 Call usage patterns
-- ⏱ Recharge gap features
-- 📅 Temporal behavior changes
-- ⏳ Customer tenure
-
----
-
-## 🧪 Model Performance
-
-| Model | Accuracy | Recall (Churn) |
-|------|----------|----------------|
-| Logistic Regression | ~75% | ~82% ✅ |
-| PCA + Logistic | ~76% | **~82% 🔥** |
-| Gradient Boosting | ~92% | ~23% ❌ |
-| XGBoost | ~92% | ~35% ❌ |
-
----
-
-## 🏆 Final Model
-
-### ✅ PCA + Logistic Regression
-
-- High Recall (~82%)
-- Stable Generalization
-- Handles Multicollinearity
-- Business-aligned performance
-
----
-
-## 📈 Business Insights
-
-- 📉 Declining revenue is the strongest churn signal  
-- 📞 Reduced usage indicates disengagement  
-- ⏱ Recharge delays are early churn indicators  
-- 📅 Recent behavior matters more than historical  
-- 🔄 Churn is a gradual behavioral process  
-
----
-
-## 💼 Business Strategy
-
-- 🎯 Segment users by churn risk  
-- 🔴 High risk → aggressive retention  
-- 🟠 Medium risk → engagement campaigns  
-- 🟢 Low risk → no action  
-
----
-
-## 🔄 Pipeline
-
+```text
+Raw Dataset
+    │
+    ▼
+Dataset Loader
+    │
+    ▼
+Column Normalization
+    │
+    ▼
+Target Detection / Encoding
+    │
+    ▼
+Train / Test Split
+    │
+    ▼
+Preprocessing Pipeline
+    ├── numeric imputation
+    ├── standard scaling
+    └── categorical one-hot encoding
+    │
+    ▼
+Balanced Logistic Regression
+    │
+    ▼
+Churn Probabilities
+    │
+    ▼
+Threshold Search
+    │
+    ├── minimum recall constraint
+    ├── precision
+    ├── recall
+    ├── F1
+    ├── ROC-AUC
+    └── PR-AUC
+    │
+    ▼
+MLflow + Local Artifacts
 ```
 
-Raw Data → Cleaning → Feature Engineering → Scaling → PCA → Model → Prediction
+The saved model is a single sklearn pipeline so preprocessing used during training remains attached to the model at inference time.
 
-````
+## Business-Oriented Evaluation
 
----
+Because the system is intended for customer-retention prioritization, accuracy alone is insufficient.
 
-## 🚀 How to Run
+The production evaluator records:
+
+| Metric | Purpose |
+|---|---|
+| Accuracy | Overall classification correctness |
+| Precision | Fraction of predicted churners that are actual churners |
+| Recall | Fraction of actual churners detected |
+| F1 | Precision/recall trade-off |
+| ROC-AUC | Ranking quality across thresholds |
+| PR-AUC | Performance under class imbalance |
+
+The training command can enforce a minimum churn recall:
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+python -m training.train \
+  --data "train data.zip" \
+  --out artifacts \
+  --min-recall 0.80
+```
 
-# Run notebook
-jupyter notebook
-````
+The decision threshold is therefore treated as a business configuration rather than assuming 0.50 is always appropriate.
 
----
+## Feature Engineering
 
-## 📌 Future Improvements
+The original project focuses on telecom behavioral signals such as:
 
-* Deploy using FastAPI / Streamlit
-* Real-time churn prediction system
-* Advanced models (LightGBM, tuned XGBoost)
-* Cost-sensitive learning
+- ARPU and revenue changes
+- call and usage behavior
+- recharge behavior and gaps
+- recent-vs-historical behavioral changes
+- network tenure / age on network
+- service and usage indicators
 
----
+The repository also contains `data_dictionary.csv` describing the telecom feature abbreviations.
 
-## 🧠 Key Learning
+## Model Tracking with MLflow
 
-* Churn is not a sudden event — it is a gradual disengagement process.
+Training logs the experiment into MLflow, including:
 
----
+- model type
+- class weighting
+- target column
+- training/test row counts
+- minimum-recall target
+- default-threshold metrics
+- optimized-threshold metrics
+- optimized decision threshold
+- serialized model
 
-## 🤝 Contributing
+Start MLflow with the Compose stack and inspect runs at:
 
-Feel free to fork and improve the project!
+```text
+http://localhost:5000
+```
 
----
+An optional registered-model name can be supplied with:
 
-## 📬 Contact
+```text
+MLFLOW_REGISTERED_MODEL_NAME
+```
 
-For any queries or collaboration, reach out!
+## Streamlit Experiment Workspace
 
----
+The Streamlit application provides a simple experiment environment:
 
-⭐ If you like this project, give it a star!
+```text
+┌──────────────────────────────────────────────────┐
+│          CUSTOMER RETENTION ML LAB               │
+├──────────────────────────────────────────────────┤
+│ Dataset: train data.zip                          │
+│ Minimum Recall: 80%                              │
+│                                                  │
+│              [ RUN FULL EXPERIMENT ]              │
+├──────────────────────────────────────────────────┤
+│ Overview | Data | Output | Artifacts | API       │
+├──────────────────────────────────────────────────┤
+│ Recall │ Precision │ F1 │ PR-AUC                 │
+└──────────────────────────────────────────────────┘
+```
+
+The UI calls the same `training.train` module used by the production pipeline instead of maintaining a second implementation of the model.
+
+## Measured Experiment Artifacts
+
+After a successful experiment, the shared `artifacts/` directory contains:
+
+```text
+artifacts/
+├── churn_model.joblib
+├── threshold.json
+├── metrics.json
+├── metadata.json
+└── experiment_history.jsonl
+```
+
+These files are generated from the actual experiment run. The dashboard should display measured values from these artifacts rather than hard-coded demonstration metrics.
+
+## FastAPI Inference Service
+
+The production API exposes:
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /health` | Liveness |
+| `GET /ready` | Readiness/model availability |
+| `GET /model` | Model metadata |
+| `POST /predict` | Churn prediction |
+| `POST /reload` | Reload updated model artifact |
+| `GET /metrics` | Prometheus metrics |
+
+Swagger/OpenAPI is available at:
+
+```text
+http://localhost:8000/docs
+```
+
+Example request:
+
+```json
+{
+  "customer_id": "customer-001",
+  "features": {
+    "arpu_8": 120.0,
+    "arpu_7": 145.0,
+    "mou_8": 310.0
+  }
+}
+```
+
+## Redis
+
+Redis is used as a low-latency prediction cache.
+
+```text
+Prediction Request
+       │
+       ▼
+   Hash Payload
+       │
+       ▼
+    Redis GET
+     /     \
+   hit     miss
+    │        │
+    │        ▼
+    │      Model
+    │        │
+    │        ▼
+    │      Result
+    │        │
+    └────────┴──► Redis SETEX
+```
+
+## PostgreSQL
+
+Prediction events can be persisted for operational analysis:
+
+```text
+prediction_events
+├── id
+├── customer_id
+├── probability
+├── prediction
+├── model_version
+└── created_at
+```
+
+The prediction path is designed so temporary analytics-storage problems do not turn into model-serving outages.
+
+## Prometheus and Grafana
+
+The API exports operational metrics such as:
+
+- prediction request count
+- prediction count by class
+- cache hits
+- prediction latency
+- model-loaded status
+- Redis status
+- PostgreSQL status
+
+Grafana is provisioned against Prometheus with a starter dashboard containing request volume, model status, request rate, and p95 latency.
+
+## Docker Compose
+
+The full local platform can be started with one command:
+
+```bash
+docker compose up --build
+```
+
+Services:
+
+| Service | Port | Purpose |
+|---|---:|---|
+| Streamlit | 8501 | Experiment interface |
+| FastAPI | 8000 | Model serving |
+| MLflow | 5000 | Experiment tracking |
+| PostgreSQL | 5432 | Persistent metadata/events |
+| Redis | 6379 | Prediction cache |
+| Prometheus | 9090 | Metrics |
+| Grafana | 3000 | Monitoring UI |
+
+## Local Workflow
+
+### 1. Start platform
+
+```bash
+docker compose up --build
+```
+
+### 2. Open Streamlit
+
+```text
+http://localhost:8501
+```
+
+### 3. Run experiment
+
+Use the **Run full experiment** button. The application uses:
+
+```text
+train data.zip
+        ↓
+training.train
+        ↓
+model + threshold + metrics
+```
+
+### 4. Inspect MLflow
+
+```text
+http://localhost:5000
+```
+
+### 5. Test API
+
+```text
+http://localhost:8000/docs
+```
+
+### 6. Monitor
+
+```text
+Prometheus → http://localhost:9090
+Grafana    → http://localhost:3000
+```
+
+## Environment Variables
+
+Useful runtime configuration includes:
+
+```text
+MODEL_VERSION
+MODEL_RELOAD_TOKEN
+ARTIFACT_DIR
+DATABASE_URL
+REDIS_URL
+CACHE_TTL_SECONDS
+CHURN_THRESHOLD
+MLFLOW_TRACKING_URI
+MLFLOW_EXPERIMENT
+MLFLOW_REGISTERED_MODEL_NAME
+MIN_RECALL_TARGET
+```
+
+For real deployments, secrets should be injected by the runtime/orchestrator rather than committed to Git.
+
+## Testing and CI
+
+GitHub Actions validates the production source tree with:
+
+```text
+Checkout
+   ↓
+Python 3.12
+   ↓
+Dependency installation
+   ↓
+Ruff
+   ↓
+Python compile check
+   ↓
+Pytest
+```
+
+The intention is to catch lint, import, syntax, and unit-test failures before deployment.
+
+## Production Considerations
+
+The included Compose stack is a strong local integration environment, but a real production deployment should additionally use:
+
+- managed PostgreSQL
+- durable object storage for model artifacts
+- managed MLflow or equivalent model registry
+- authentication and authorization
+- TLS
+- secret management
+- network isolation
+- encrypted storage
+- PII minimization
+- data validation
+- model/data drift alerting
+- scheduled retraining
+- approval gates before promotion
+- canary/blue-green rollout
+- automated rollback
+- backup and disaster recovery
+
+## Important Data Note
+
+`sample.csv` is a prediction-output sample, not the primary training dataset. The production experiment UI therefore defaults to:
+
+```text
+train data.zip
+```
+
+The repository's `data_dictionary.csv` documents the telecom feature abbreviations used by the source data.
+
+## Original Notebook
+
+The original exploratory work remains available in:
+
+```text
+Artificial_intelligence_Driven_Customer_Retention_System.ipynb
+```
+
+Use the notebook for EDA, experimentation, feature analysis, and model comparison. Use the `src/`, `training/`, `api/`, and Docker/MLOps components for the reproducible serving path.
+
+## License
+
+See [LICENSE](LICENSE).
