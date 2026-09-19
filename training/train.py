@@ -7,10 +7,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
-import mlflow
 import mlflow.sklearn
 from sklearn.model_selection import train_test_split
 
+import mlflow
 from src.data import load_dataframe, prepare_xy
 from src.evaluation import (
     classification_metrics,
