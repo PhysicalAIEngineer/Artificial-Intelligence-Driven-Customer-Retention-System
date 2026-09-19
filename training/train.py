@@ -150,7 +150,7 @@ def main():
             )
         )
 
-        (output / "metadata.json").write_text(
+        (output / "metrics.json").write_text(json.dumps(optimized["metrics"], indent=2))\n        with (output / "experiment_history.jsonl").open("a") as history:\n            history.write(json.dumps({"timestamp": datetime.now(timezone.utc).isoformat(), "threshold": optimized["threshold"], "metrics": optimized["metrics"], "run_id": run.info.run_id}) + "\\n")\n\n        (output / "metadata.json").write_text(
             json.dumps(
                 {
                     "run_id": run.info.run_id,
