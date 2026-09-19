@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
-DEFAULT_DATA = ROOT / "sample.csv"
+DEFAULT_DATA = ROOT / "train data.zip"
 TRAIN_SCRIPT = ROOT / "training" / "train.py"
 
 st.set_page_config(
@@ -122,7 +122,7 @@ with tabs[0]:
 
 with tabs[1]:
     path = Path(data_path)
-    if path.exists() and path.suffix.lower() == ".csv":
+    if path.exists() and path.suffix.lower() in {".csv", ".zip"}:
         df = load_preview(str(path))
         c1, c2, c3 = st.columns(3)
         c1.metric("Rows previewed", f"{len(df):,}")
@@ -164,5 +164,5 @@ with tabs[4]:
         "uvicorn api.main:app --host 0.0.0.0 --port 8000",
         language="bash",
     )
-    st.write("Health: http://localhost:8000/health")
+    st.write("Health: http://localhost:8000/health")\n    st.write("MLflow: http://localhost:5000")\n    st.write("Prometheus: http://localhost:9090")\n    st.write("Grafana: http://localhost:3000")
     st.write("Swagger: http://localhost:8000/docs")
