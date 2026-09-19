@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
@@ -29,10 +30,7 @@ def main():
         "--min-recall",
         type=float,
         default=float(
-            os.getenv(
-                "MIN_RECALL_TARGET",
-                "0.80",
-            )
+            os.getenv("MIN_RECALL_TARGET", "0.80")
         ),
     )
     args = parser.parse_args()
@@ -98,15 +96,13 @@ def main():
         mlflow.log_metrics(
             {
                 f"default_{key}": value
-                for key, value
-                in default_metrics.items()
+                for key, value in default_metrics.items()
             }
         )
         mlflow.log_metrics(
             {
                 f"optimized_{key}": value
-                for key, value
-                in optimized["metrics"].items()
+                for key, value in optimized["metrics"].items()
             }
         )
         mlflow.log_param(
@@ -150,7 +146,31 @@ def main():
             )
         )
 
-        (output / "metrics.json").write_text(json.dumps(optimized["metrics"], indent=2))\n        with (output / "experiment_history.jsonl").open("a") as history:\n            history.write(json.dumps({"timestamp": datetime.now(timezone.utc).isoformat(), "threshold": optimized["threshold"], "metrics": optimized["metrics"], "run_id": run.info.run_id}) + "\\n")\n\n        (output / "metadata.json").write_text(
+        (output / "metrics.json").write_text(
+            json.dumps(
+                optimized["metrics"],
+                indent=2,
+            )
+        )
+
+        with (
+            output / "experiment_history.jsonl"
+        ).open("a") as history:
+            history.write(
+                json.dumps(
+                    {
+                        "timestamp": datetime.now(
+                            timezone.utc
+                        ).isoformat(),
+                        "threshold": optimized["threshold"],
+                        "metrics": optimized["metrics"],
+                        "run_id": run.info.run_id,
+                    }
+                )
+                + "\n"
+            )
+
+        (output / "metadata.json").write_text(
             json.dumps(
                 {
                     "run_id": run.info.run_id,
