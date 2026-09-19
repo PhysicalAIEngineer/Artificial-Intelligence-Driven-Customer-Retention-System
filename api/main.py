@@ -124,7 +124,7 @@ def _init_database():
                 )
             )
         DB_READY.set(1)
-    except Exception:
+    except (redis.RedisError, OSError):
         DB_READY.set(0)
 
 
@@ -135,7 +135,7 @@ def _check_redis():
     try:
         redis_client.ping()
         REDIS_READY.set(1)
-    except Exception:
+    except (redis.RedisError, OSError):
         REDIS_READY.set(0)
 
 
@@ -194,7 +194,7 @@ def _write_prediction_event(
                     "model_version": MODEL_VERSION,
                 },
             )
-    except Exception:
+    except (redis.RedisError, OSError):
         DB_READY.set(0)
 
 
@@ -296,7 +296,7 @@ def predict(request: PredictionRequest):
                 result = json.loads(cached)
                 result["cached"] = True
                 return result
-        except Exception:
+        except (redis.RedisError, OSError):
             REDIS_READY.set(0)
 
     started = time.perf_counter()
@@ -327,7 +327,7 @@ def predict(request: PredictionRequest):
                     int(os.getenv("CACHE_TTL_SECONDS", "300")),
                     json.dumps(result),
                 )
-            except Exception:
+            except (redis.RedisError, OSError):
                 REDIS_READY.set(0)
 
         _write_prediction_event(
