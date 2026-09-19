@@ -1,0 +1,19 @@
+name: Customer Retention MLOps
+on:
+  push:
+    branches: [main, production-mlops]
+  pull_request:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-api.txt -r requirements-train.txt pytest ruff
+      - run: ruff check src training api tests
+      - run: pytest -q
+      - run: python -m compileall -q src training api
+      - run: docker build -t customer-retention-api:ci .
