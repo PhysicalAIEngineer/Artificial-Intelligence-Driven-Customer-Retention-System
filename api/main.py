@@ -13,7 +13,6 @@ from fastapi import FastAPI, Header, HTTPException
 from prometheus_client import Counter, Gauge, Histogram, make_asgi_app
 from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, text
-from sqlalchemy.exc import SQLAlchemyError
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_DIR = Path(
