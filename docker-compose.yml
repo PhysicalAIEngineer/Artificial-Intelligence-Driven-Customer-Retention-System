@@ -10,10 +10,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-
+    volumes: [postgres_data:/var/lib/postgresql/data]
   redis:
     image: redis:7-alpine
     healthcheck:
@@ -21,82 +18,47 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
+    volumes: [redis_data:/data]
   mlflow:
-    build:
-      context: .
-      dockerfile: mlflow/Dockerfile
+    build: {context: ., dockerfile: mlflow/Dockerfile}
     depends_on:
-      postgres:
-        condition: service_healthy
+      postgres: {condition: service_healthy}
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
-    volumes:
-      - mlflow_artifacts:/mlflow/artifacts
-    ports:
-      - "5000:5000"
-    restart: unless-stopped
-
+    volumes: [mlflow_artifacts:/mlflow/artifacts]
+    ports: ["5000:5000"]
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: {context: ., dockerfile: Dockerfile}
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
     environment:
       ARTIFACT_DIR: /app/artifacts
-      MODEL_VERSION: churn-v1
-      MODEL_RELOAD_TOKEN: retention-dev-token
       DATABASE_URL: postgresql+psycopg2://retention:retention@postgres:5432/retention
       REDIS_URL: redis://redis:6379/0
-      CACHE_TTL_SECONDS: "300"
-    volumes:
-      - ./artifacts:/app/artifacts
-    ports:
-      - "8000:8000"
-    restart: unless-stopped
-
+      MODEL_VERSION: churn-v1
+      MODEL_RELOAD_TOKEN: retention-dev-token
+    volumes: [./artifacts:/app/artifacts]
+    ports: ["8000:8000"]
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile.web
+    build: {context: ., dockerfile: Dockerfile.web}
     depends_on:
-      mlflow:
-        condition: service_started
-      api:
-        condition: service_started
+      mlflow: {condition: service_started}
+      api: {condition: service_started}
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
       RETENTION_API_URL: http://api:8000
       MODEL_RELOAD_TOKEN: retention-dev-token
-    volumes:
-      - ./artifacts:/app/artifacts
-    ports:
-      - "8501:8501"
-    restart: unless-stopped
-
+    volumes: [./artifacts:/app/artifacts]
+    ports: ["8501:8501"]
   prometheus:
     image: prom/prometheus:v3.5.0
-    depends_on:
-      api:
-        condition: service_started
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
-    restart: unless-stopped
-
+    depends_on: [api]
+    volumes: [./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro]
+    ports: ["9090:9090"]
   grafana:
     image: grafana/grafana:12.1.1
-    depends_on:
-      prometheus:
-        condition: service_started
+    depends_on: [prometheus]
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
@@ -105,10 +67,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
-
+    ports: ["3000:3000"]
 volumes:
   postgres_data:
   redis_data:
