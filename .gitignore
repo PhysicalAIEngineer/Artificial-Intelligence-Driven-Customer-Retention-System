@@ -1,0 +1,11 @@
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+artifacts/*.joblib
+artifacts/metadata.json
+artifacts/threshold.json
+mlruns/
